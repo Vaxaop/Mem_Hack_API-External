@@ -8,6 +8,7 @@ typedef unsigned long ulong;
 typedef unsigned long long ulongl;
 typedef unsigned int uint;
 uint pID;
+HANDLE handle_game;
 uint GetPID(const char * processname) {
     uint pID = 0;
     PROCESSENTRY32 entry;
@@ -20,7 +21,9 @@ uint GetPID(const char * processname) {
         {
             if (!strcmp(entry.szExeFile, processname))
             {
+                
                 pID = entry.th32ProcessID;
+                handle_game = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pID);
                 break;
             }
         }
@@ -56,13 +59,13 @@ ulongl GetModuleAddress(const char * modulename) {
 }
 
 // ex valueread = "float"
-double RPM(HANDLE handle_game, ulongl address, const char* valueread) {
+double RPM(ulongl address, const char* valueread) { 
     
     if (strcmp(valueread, "int") == 0) {
         int value = 0;
         ulongl oldprotect = 0;
         ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READ, &oldprotect);
+        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);;
         bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
         if (rpm == false) {
@@ -77,7 +80,7 @@ double RPM(HANDLE handle_game, ulongl address, const char* valueread) {
        float value = 0;
        ulongl oldprotect = 0;
        ulongl oldprotect_one = 0;
-       VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READ, &oldprotect);
+       VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
        bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
        VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
        if (rpm == false) {
@@ -92,7 +95,7 @@ double RPM(HANDLE handle_game, ulongl address, const char* valueread) {
         double value = 0;
         ulongl oldprotect = 0;
         ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READ, &oldprotect);
+        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
         bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
         if (rpm == false) {
@@ -107,7 +110,7 @@ double RPM(HANDLE handle_game, ulongl address, const char* valueread) {
         ulongl value = 0;
         ulongl oldprotect = 0;
         ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READ, &oldprotect);
+        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
         bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
         if (rpm == false) {
@@ -122,7 +125,7 @@ double RPM(HANDLE handle_game, ulongl address, const char* valueread) {
         ulong value = 0;
         ulongl oldprotect = 0;
         ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READ, &oldprotect);
+        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
         bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
         if (rpm == false) {
@@ -139,7 +142,7 @@ double RPM(HANDLE handle_game, ulongl address, const char* valueread) {
     }
 }
 //put valueofwrite with &before it
-bool WPM(HANDLE handle_game, ulongl address, void * valueofwrite, const char* valuewrite) {
+bool WPM(ulongl address, void * valueofwrite, const char* valuewrite) {
     if (strcmp(valuewrite, "int") == 0) {
         int value = *(int*)valueofwrite;
         ulongl oldprotect = 0;
@@ -221,7 +224,7 @@ bool WPM(HANDLE handle_game, ulongl address, void * valueofwrite, const char* va
 }
 
 // sizeofoffsets = sizeof(offsets) / sizeof(offsets[0])
-ulongl GetptrAddress(HANDLE handle_game, ulong baseaddress, uint offsets[], SIZE_T sizeofoffsets) {
+ulongl GetptrAddress(ulong baseaddress, uint offsets[], SIZE_T sizeofoffsets) {
     ulong address = baseaddress;
     ulong currentreading = 0;
 
@@ -237,3 +240,4 @@ ulongl GetptrAddress(HANDLE handle_game, ulong baseaddress, uint offsets[], SIZE
     }
     return address;
 }
+
