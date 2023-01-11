@@ -63,18 +63,19 @@ ulongl GetModuleAddress(const char * modulename) {
 }
 // ex read_size = sizeof(address) ex : ulongl * addr = RPM(parameters) to define float value = *(float*)addr
 void * RPM(ulongl address, size_t read_size) {
-        void * value;
+        void* value = malloc(read_size);
         ulongl oldprotect = 0;
         ulongl oldprotect_one = 0;
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);;
-        bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, read_size, NULL);
+        bool rpm = ReadProcessMemory(handle_game, (const void*)address, value, read_size, NULL);
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
         if (rpm == false) {
             printf("RPM Failed at this address : 0x%p\n", address);
+            free(value);
             return false;
         }
         else {
-            return &value;
+            return value;
         }
 }
 //put valueofwrite with &before it
@@ -109,8 +110,4 @@ ulongl GetptrAddress(ulong baseaddress, uint offsets[], SIZE_T sizeofoffsets) {
         currentreading = 0;
     }
     return address;
-}
-
-ulongl GetSignatureAddress(const char * signature, int add, int sub) {
-    // to be continued;
 }
