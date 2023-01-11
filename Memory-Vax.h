@@ -2,13 +2,17 @@
 #include <windows.h>
 #include <TlHelp32.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
 #include <stdbool.h>
 #include <string.h>
 typedef unsigned long ulong;
 typedef unsigned long long ulongl;
 typedef unsigned int uint;
+
 uint pID;
 HANDLE handle_game;
+
 uint GetPID(const char * processname) {
     uint pID = 0;
     PROCESSENTRY32 entry;
@@ -57,172 +61,38 @@ ulongl GetModuleAddress(const char * modulename) {
     CloseHandle(hSnap);
     return ModuleBaseAddress;
 }
-
-// ex valueread = "float"
-double RPM(ulongl address, const char* valueread) { 
-    
-    if (strcmp(valueread, "int") == 0) {
-        int value = 0;
+// ex read_size = sizeof(address) ex : ulongl * addr = RPM(parameters) to define float value = *(float*)addr
+void * RPM(ulongl address, size_t read_size) {
+        void * value;
         ulongl oldprotect = 0;
         ulongl oldprotect_one = 0;
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);;
-        bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
+        bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, read_size, NULL);
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
         if (rpm == false) {
-            printf("RPM Failed at this address : 0x%lX\n", address);
+            printf("RPM Failed at this address : 0x%p\n", address);
+            return false;
         }
         else {
-            return value;
+            return &value;
         }
-    }
-
-    if (strcmp(valueread, "float") == 0) {
-       float value = 0;
-       ulongl oldprotect = 0;
-       ulongl oldprotect_one = 0;
-       VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-       bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
-       VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
-       if (rpm == false) {
-           printf("RPM Failed at this address : 0x%lX\n", address);
-       }
-       else {
-           return value;
-       }
-   }
-
-    if (strcmp(valueread, "double") == 0) {
-        double value = 0;
-        ulongl oldprotect = 0;
-        ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-        bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
-        if (rpm == false) {
-            printf("RPM Failed at this address : 0x%lX\n", address);
-        }
-        else {
-            return value;
-        }
-    }
-
-    if (strcmp(valueread, "ulongl") == 0) {
-        ulongl value = 0;
-        ulongl oldprotect = 0;
-        ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-        bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
-        if (rpm == false) {
-            printf("RPM Failed at this address : 0x%lX\n", address);
-        }
-        else {
-            return value;
-        }
-    }
-
-    if (strcmp(valueread, "ulong") == 0) {
-        ulong value = 0;
-        ulongl oldprotect = 0;
-        ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-        bool rpm = ReadProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
-        if (rpm == false) {
-            printf("RPM Failed at this address : 0x%lX\n", address);
-        }
-        else {
-            return value;
-        }
-    }
-
-    else {
-       printf("Not a valid valueread ! \n");
-       void* value;
-    }
 }
 //put valueofwrite with &before it
-bool WPM(ulongl address, void * valueofwrite, const char* valuewrite) {
-    if (strcmp(valuewrite, "int") == 0) {
-        int value = *(int*)valueofwrite;
+bool WPM(ulongl address, void * valueofwrite, size_t write_size) {
+        void* value = valueofwrite;
         ulongl oldprotect = 0;
         ulongl oldprotect_one = 0;
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-        bool wpm = WriteProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
+        bool wpm = WriteProcessMemory(handle_game, (const void*)address, value, write_size, NULL);
         VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
         if (wpm == false) {
-            printf("WPM Failed at this address : 0x%lX\n", address);
+            printf("WPM Failed at this address : 0x%p\n", address);
+            return false;
         }
         else {
             return true;
         }
-    }
-
-    if (strcmp(valuewrite, "float") == 0) {
-        float value = *(float*)valueofwrite;
-        ulongl oldprotect = 0;
-        ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-        bool wpm = WriteProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
-        if (wpm == false) {
-            printf("WPM Failed at this address : 0x%lX\n", address);
-        }
-        else {
-            return true;
-        }
-    }
-
-    if (strcmp(valuewrite, "double") == 0) {
-        double value = *(double*)valueofwrite;
-        ulongl oldprotect = 0;
-        ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-        bool wpm = WriteProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
-        if (wpm == false) {
-            printf("WPM Failed at this address : 0x%lX\n", address);
-        }
-        else {
-            return true;
-        }
-    }
-
-    if (strcmp(valuewrite, "ulongl") == 0) {
-        ulongl value = *(ulongl*)valueofwrite;
-        ulongl oldprotect = 0;
-        ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-        bool wpm = WriteProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
-        if (wpm == false) {
-            printf("WPM Failed at this address : 0x%lX\n", address);
-        }
-        else {
-            return true;
-        }
-    }
-
-    if (strcmp(valuewrite, "ulong") == 0) {
-        ulong value = *(ulong*)valueofwrite;
-        ulongl oldprotect = 0;
-        ulongl oldprotect_one = 0;
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), PAGE_EXECUTE_READWRITE, &oldprotect);
-        bool wpm = WriteProcessMemory(handle_game, (const void*)address, &value, sizeof(value), NULL);
-        VirtualProtectEx(handle_game, (void*)address, sizeof(address), oldprotect, &oldprotect_one);
-        if (wpm == false) {
-            printf("WPM Failed at this address : 0x%lX\n", address);
-        }
-        else {
-            return true;
-        }
-    }
-
-    else {
-        printf("Not a valid valueread ! \n");
-    }
 }
-
 // sizeofoffsets = sizeof(offsets) / sizeof(offsets[0])
 ulongl GetptrAddress(ulong baseaddress, uint offsets[], SIZE_T sizeofoffsets) {
     ulong address = baseaddress;
@@ -241,3 +111,6 @@ ulongl GetptrAddress(ulong baseaddress, uint offsets[], SIZE_T sizeofoffsets) {
     return address;
 }
 
+ulongl GetSignatureAddress(const char * signature, int add, int sub) {
+    // to be continued;
+}
