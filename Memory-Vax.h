@@ -61,7 +61,10 @@ ulongl GetModuleAddress(const char * modulename) {
     CloseHandle(hSnap);
     return ModuleBaseAddress;
 }
-// ex read_size = sizeof(address) ex : ulongl * addr = RPM(parameters) to define float value = *(float*)addr
+/* ex : void * valuetoread = RPM(addr, thesize);
+   ex : printf("value = %.2f", *(float*)valuetoread);
+   ex : free(valuetoread);
+*/
 void * RPM(ulongl address, size_t read_size) {
         void* value = malloc(read_size);
         ulongl oldprotect = 0;
